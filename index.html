@@ -429,7 +429,10 @@ tfoot td.L { color:var(--celeste-claro) !important; text-align:left; }
   .kg3{grid-template-columns:repeat(2,minmax(0,1fr))}
   .kg2{grid-template-columns:minmax(0,1fr)}
   .kval{font-size:22px}
-  .heat-g{grid-template-columns:auto repeat(5,1fr);font-size:10px}
+  .heat-g{display:grid;grid-template-columns:auto repeat(5,1fr);gap:4px;align-items:center;font-size:10px;width:100%}
+.hrl{font-size:10px;font-weight:600;color:var(--suave);text-align:right;padding-right:6px;white-space:nowrap}
+.hcl{font-size:9px;font-weight:700;color:var(--suave);text-align:center;letter-spacing:.04em}
+.hc{aspect-ratio:1;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:default;min-width:32px;min-height:32px}
   .hc{font-size:10px}
   .rec-grid-inner{grid-template-columns:1fr}
   div[style*="grid-template-columns:repeat(3,1fr)"]{display:grid!important;grid-template-columns:1fr!important}
@@ -813,44 +816,52 @@ function renderAusentismo(){
     return 'background:#083A52;color:#fff';
   }
 
-  let heatHTML = '<div class="heat-g" style="grid-template-columns:auto repeat(5,1fr)">';
-  heatHTML += '<div class="hrl"></div>';
-  dias.forEach(function(d){ heatHTML += '<div class="hcl">'+diasLabel[d]+'</div>'; });
+  let heatHTML = '<table style="border-collapse:separate;border-spacing:4px;margin-top:8px">';
+  heatHTML += '<thead><tr><th style="font-size:10px;font-weight:600;color:var(--suave);text-align:right;padding-right:8px"></th>';
+  dias.forEach(function(d){ heatHTML += '<th style="font-size:10px;font-weight:600;color:var(--suave);text-align:center;padding:4px 2px;letter-spacing:.04em">'+diasLabel[d]+'</th>'; });
+  heatHTML += '<th style="font-size:10px;font-weight:600;color:var(--suave);text-align:center;padding:4px 8px">TOT</th></tr></thead><tbody>';
 
   if(isE){
     ['JC','AC','FD'].forEach(function(p){
-      heatHTML += '<div class="hrl">'+pnames[p]+'</div>';
+      var rowTot=0;
+      heatHTML += '<tr><th style="font-size:11px;font-weight:500;color:var(--texto);text-align:right;padding-right:8px">'+pnames[p]+'</th>';
       dias.forEach(function(d){
         const v = AUSEN.equipo.heat[p][d]||0;
-        heatHTML += '<div class="hc" style="'+hc(v,56)+'" title="'+pnames[p]+'-'+d+': '+v+'">'+v+'</div>';
+        rowTot+=v;
+        heatHTML += '<td style="width:48px;height:40px;border-radius:6px;text-align:center;vertical-align:middle;font-size:13px;font-weight:600;'+hc(v,56)+'" title="'+pnames[p]+'-'+d+': '+v+'">'+v+'</td>';
       });
+      heatHTML += '<td style="width:48px;height:40px;border-radius:6px;text-align:center;vertical-align:middle;font-size:13px;font-weight:600;padding-left:6px;color:var(--texto)">'+rowTot+'</td></tr>';
     });
-    heatHTML += '<div class="hrl" style="font-weight:700;color:var(--azul)">Total</div>';
+    heatHTML += '<tr><th style="font-size:11px;font-weight:700;color:var(--azul);text-align:right;padding-right:8px">Total</th>';
     dias.forEach(function(d){
       const v = A.dias[d]||0;
-      heatHTML += '<div class="hc" style="'+hc(v,120)+';font-size:12px">'+v+'</div>';
+      heatHTML += '<td style="width:48px;height:40px;border-radius:6px;text-align:center;vertical-align:middle;font-size:14px;font-weight:600;'+hc(v,120)+'">'+v+'</td>';
     });
+    heatHTML += '<td style="width:48px;height:40px;border-radius:6px;text-align:center;vertical-align:middle;font-size:14px;font-weight:700;background:#083A52;color:#fff">408</td></tr>';
   } else {
-    const mesesArr = ['Ene','Feb','Mar'];
+    var mesesArr = ['Ene','Feb','Mar'];
     mesesArr.forEach(function(m){
-      const tot_m = (DATA[cProf].meses[m].ic||0)+(DATA[cProf].meses[m].ik||0);
-      const sumDias = Object.values(A.dias).reduce(function(a,b){return a+b;},0);
-      heatHTML += '<div class="hrl">'+MFULL[m]+'</div>';
+      var rowTotM=0;
+      var tot_m = (DATA[cProf].meses[m].ic||0)+(DATA[cProf].meses[m].ik||0);
+      var sumDias = Object.values(A.dias).reduce(function(a,b){return a+b;},0);
+      heatHTML += '<tr><th style="font-size:11px;font-weight:500;color:var(--texto);text-align:right;padding-right:8px">'+MFULL[m]+'</th>';
       dias.forEach(function(d){
-        const prop = (A.dias[d]||0)/(sumDias||1);
-        const v = Math.round(tot_m*prop);
-        const maxV = Math.round(tot_m*Math.max.apply(null,Object.values(A.dias))/(sumDias||1));
-        heatHTML += '<div class="hc" style="'+hc(v,maxV||1)+'" title="'+MFULL[m]+'-'+d+': ~'+v+'">'+v+'</div>';
+        var prop = (A.dias[d]||0)/(sumDias||1);
+        var v = Math.round(tot_m*prop);
+        var maxV = Math.round(tot_m*Math.max.apply(null,Object.values(A.dias))/(sumDias||1));
+        rowTotM+=v;
+        heatHTML += '<td style="width:48px;height:40px;border-radius:6px;text-align:center;vertical-align:middle;font-size:13px;font-weight:600;'+hc(v,maxV||1)+'" title="'+MFULL[m]+'-'+d+': ~'+v+'">'+v+'</td>';
       });
     });
-    heatHTML += '<div class="hrl" style="font-weight:700;color:var(--azul)">Total</div>';
-    const maxD = Math.max.apply(null,Object.values(A.dias));
+    heatHTML += '<tr><th style="font-size:11px;font-weight:700;color:var(--azul2);text-align:right;padding-right:8px">Total</th>';
+    var maxD2 = Math.max.apply(null,Object.values(A.dias));
     dias.forEach(function(d){
-      const v=A.dias[d]||0;
-      heatHTML += '<div class="hc" style="'+hc(v,maxD)+';font-size:12px">'+v+'</div>';
+      var v2=A.dias[d]||0;
+      heatHTML += '<td style="width:48px;height:40px;border-radius:6px;text-align:center;vertical-align:middle;font-size:14px;font-weight:600;'+hc(v2,maxD2)+'">'+v2+'</td>';
     });
+    heatHTML += '<td style="width:48px;height:40px;border-radius:6px;text-align:center;vertical-align:middle;font-size:14px;font-weight:700;background:#083A52;color:#fff">'+tot+'</td></tr>';
   }
-  heatHTML += '</div>';
+  heatHTML += '</tbody></table>';
   heatHTML += '<div style="margin-top:8px;font-size:9px;color:var(--suave);display:flex;align-items:center;gap:4px">Escala: <span style="background:#D6EEF6;width:14px;height:8px;border-radius:2px;display:inline-block"></span><span style="background:#72CBE7;width:14px;height:8px;border-radius:2px;display:inline-block"></span><span style="background:#0D82A9;width:14px;height:8px;border-radius:2px;display:inline-block"></span><span style="background:#0B5876;width:14px;height:8px;border-radius:2px;display:inline-block"></span><span style="background:#083A52;width:14px;height:8px;border-radius:2px;display:inline-block"></span> Bajo - Alto</div>';
 
   // Barras rango etario
