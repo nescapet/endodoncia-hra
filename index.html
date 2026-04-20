@@ -57,7 +57,7 @@ body {
 /* ═══ FONDO DECORATIVO ═══ */
 body::before {
   content:'';
-  position:fixed; top:0; left:0; width:100%; height:100%;
+  position:fixed; top:0; left:0; width:100vw; height:100vh; min-height:100%;
   background:
     radial-gradient(ellipse 60% 55% at 92% -5%,  rgba(13,130,169,0.22) 0%, transparent 60%),
     radial-gradient(ellipse 45% 45% at -8% 25%,  rgba(75,186,204,0.16) 0%, transparent 55%),
@@ -90,8 +90,9 @@ body::before {
 .header-inner {
   position:relative; z-index:2;
   max-width:1300px; margin:0 auto;
-  padding:22px 40px 20px;
-  display:flex; align-items:center; justify-content:space-between; gap:20px;
+  padding:18px 20px 16px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  flex-wrap:wrap;
 }
 .header-logo {
   display:flex; align-items:center; gap:18px;
@@ -153,11 +154,14 @@ body::before {
   border-bottom:1px solid var(--borde);
   box-shadow: 0 2px 12px rgba(9,118,159,0.08);
   position:sticky; top:0; z-index:100;
+  overflow-x:auto;
 }
 .nav-inner {
   max-width:1300px; margin:0 auto;
-  padding:0 40px;
+  padding:0 16px;
   display:flex; align-items:center; gap:0;
+  min-width:max-content;
+  width:100%;
 }
 .prof-tab {
   padding:13px 24px;
@@ -413,6 +417,43 @@ tfoot td.L { color:var(--celeste-claro) !important; text-align:left; }
   .nav-inner{padding:0 16px}
   .rec-grid{grid-template-columns:1fr}
 }
+
+@media(max-width:640px){
+  .header-inner{padding:14px 14px;}
+  .h-title{font-size:13px}
+  .logo-img{width:52px;height:52px}
+  .h-right .anio{font-size:28px}
+  .nav-inner{padding:0 10px}
+  .main{padding:12px 10px 36px}
+  .kg6,.kg4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kg3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kg2{grid-template-columns:minmax(0,1fr)}
+  .kval{font-size:22px}
+  .heat-g{grid-template-columns:auto repeat(5,1fr);font-size:10px}
+  .hc{font-size:10px}
+  .rec-grid-inner{grid-template-columns:1fr}
+  div[style*="grid-template-columns:repeat(3,1fr)"]{display:grid!important;grid-template-columns:1fr!important}
+  .tcard{margin:0 -10px;border-radius:0;border-left:none;border-right:none}
+  table{font-size:10px}
+  th,td{padding:6px 7px}
+  .thead-bar h3{font-size:12px}
+  .slabel{margin:18px 0 10px}
+}
+@media(max-width:400px){
+  .kg6,.kg4,.kg3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .h-title{font-size:12px}
+}
+
+
+@media(max-width:640px){
+  .rec-grid-resp{grid-template-columns:1fr!important}
+  .cct{font-size:11px}
+  .ccs{font-size:9px}
+  .nav-r select{font-size:11px;padding:4px 8px}
+  .nav-r label{display:none}
+  .stab{padding:8px 12px;font-size:10px}
+  .prof-tab-text{display:none}
+}
 </style>
 </head>
 <body>
@@ -432,7 +473,7 @@ tfoot td.L { color:var(--celeste-claro) !important; text-align:left; }
       <div class="anio">2026</div>
       <div class="update">Actualización mensual</div>
       <div class="period-badge" id="period-badge">Ene–Mar · Q1</div>
-      <button onclick="showUpdatePanel()" style="margin-top:4px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.04em">+ Actualizar mes</button>
+      
     </div>
   </div>
 </div>
@@ -578,6 +619,89 @@ function destroyCharts(){
 // ══════════════════════════════════════════════
 // SECCIÓN: PRODUCCIÓN
 // ══════════════════════════════════════════════
+
+function simK(cls,lbl,val,sub){
+  return '<div class="kcard '+cls+'"><div class="klbl">'+lbl+'</div><div class="kval">'+val+'</div><div class="ksub">'+sub+'</div></div>';
+}
+
+function cumK(cls,lbl,val,meta){
+  var p=pc(val,meta), w=Math.min(p,100), ref=25;
+  var bcls=p>=85?'b-ok':p>=55?'b-war':'b-low';
+  var cols={ca:'#0D82A9',ct:'#2DA8A8',cq:'#4BBACC',cc:'#09769F',cv:'#0E7A5A',cam:'#9A6200',cb:'#0B5876'};
+  var col=cols[cls]||'#09769F';
+  return '<div class="kcard '+cls+'"><div class="klbl">'+lbl+'</div><div class="kval">'+val+'</div>'
+    +'<div class="ksub">meta: '+meta.toLocaleString('es-CL')+'</div>'
+    +'<div class="pbar"><div class="pref" style="left:'+ref+'%"></div>'
+    +'<div class="pbf" style="width:'+w+'%;background:'+col+'"></div></div>'
+    +'<div class="ppct">'+p+'% <span class="bdg '+bcls+'">'+(p>=ref?'▲':'▼')+' esp.'+ref+'%</span></div>'
+    +'</div>';
+}
+
+function pcls(p){ return p>=85?'pok':p>=55?'pwar':'plow'; }
+function bdg(p){ var c=p>=85?'bok':p>=55?'bwarn':'blow'; var a=p>=85?'▲':p>=55?'◆':'▼'; return '<span class="bdg '+c+'">'+a+p+'%</span>'; }
+
+function getEq(m){
+  var r={cne:0,ctrl:0,altas:0,uni:0,bi:0,multi:0,retrat:0,ic:0,ik:0,ppv:0};
+  ['JC','AC','FD'].forEach(function(p){ var d=getRow(p,m); Object.keys(r).forEach(function(k){ r[k]+=(d[k]||0); }); });
+  return r;
+}
+
+function getPE(){
+  var keys=['cne','altas','uni','bi','multi','retrat','total_endo'];
+  var r={}; keys.forEach(function(k){ r[k]=0; });
+  ['JC','AC','FD'].forEach(function(p){ keys.forEach(function(k){ r[k]+=(DATA[p].prog[k]||0); }); });
+  return r;
+}
+
+function tablaEquipo(){
+  var prog=getPE();
+  var rows=['JC','AC','FD'].map(function(p){
+    var d=getRow(p,cMes), te=d.uni+d.bi+d.multi, pa=pc(d.altas,DATA[p].prog.altas), cls=pcls(pa);
+    return '<tr><td class="L">'+DATA[p].nombre.replace(/Dr[a]?\. /,'')+'</td>'
+      +'<td>'+DATA[p].hrs+'h</td><td>'+d.cne+'</td><td>'+d.ctrl+'</td><td>'+d.altas+'</td>'
+      +'<td>'+d.uni+'</td><td>'+d.bi+'</td><td>'+d.multi+'</td><td>'+d.retrat+'</td><td>'+te+'</td>'
+      +'<td>'+(d.ic+d.ik)+'</td><td class="mny">'+fmt(d.ppv)+'</td>'
+      +'<td class="'+cls+'">'+pa+'%</td></tr>';
+  }).join('');
+  var t=getEq(cMes), tte=t.uni+t.bi+t.multi, ta=pc(t.altas,prog.altas);
+  return '<div class="slabel">Tabla consolidada por profesional</div>'
+    +'<div class="tcard"><div class="thead"><h3>Gestión clínica — Especialidad Endodoncia</h3>'
+    +'<span>Hospital Dr. Leonardo Guzmán · Antofagasta</span></div>'
+    +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table>'
+    +'<thead><tr><th class="L">Profesional</th><th>Hrs</th><th>CNE</th><th>Ctrl</th><th>Altas</th>'
+    +'<th>Uni.</th><th>Bi.</th><th>Multi.</th><th>Ret.</th><th>Tot.Endo.</th>'
+    +'<th>Inasist.</th><th>PPV</th><th>%Cumpl.</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'<tfoot><tr><td class="L">Total equipo</td><td>110h</td><td>'+t.cne+'</td><td>'+t.ctrl+'</td><td>'+t.altas+'</td>'
+    +'<td>'+t.uni+'</td><td>'+t.bi+'</td><td>'+t.multi+'</td><td>'+t.retrat+'</td><td>'+tte+'</td>'
+    +'<td>'+(t.ic+t.ik)+'</td><td class="mny">'+fmt(t.ppv)+'</td><td>'+ta+'%</td></tr></tfoot>'
+    +'</table></div></div>';
+}
+
+function tablaInd(p){
+  var pd=DATA[p];
+  var rows=MESES.map(function(m){
+    var d=pd.meses[m], te=d.uni+d.bi+d.multi;
+    var pa=pc(d.altas,Math.round(pd.prog.altas/12)), cls=pcls(pa);
+    return '<tr><td class="L">'+MFULL[m]+'</td><td>'+d.cne+'</td><td>'+d.ctrl+'</td><td>'+d.altas+'</td>'
+      +'<td>'+d.uni+'</td><td>'+d.bi+'</td><td>'+d.multi+'</td><td>'+d.retrat+'</td><td>'+te+'</td>'
+      +'<td>'+d.ic+'</td><td>'+d.ik+'</td><td class="mny">'+fmt(d.ppv)+'</td><td class="'+cls+'">'+pa+'%</td></tr>';
+  }).join('');
+  var d=getRow(p,'acum'), te=d.uni+d.bi+d.multi, pa=pc(d.altas,pd.prog.altas);
+  return '<div class="slabel">Tabla mensual — '+pd.nombre+'</div>'
+    +'<div class="tcard"><div class="thead"><h3>'+pd.nombre+'</h3><span>'+pd.hrs+' hrs semanales · Programación 2026</span></div>'
+    +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table>'
+    +'<thead><tr><th class="L">Mes</th><th>CNE</th><th>Ctrl</th><th>Altas</th>'
+    +'<th>Uni.</th><th>Bi.</th><th>Multi.</th><th>Ret.</th><th>Tot.Endo.</th>'
+    +'<th>Inas.CNE</th><th>Inas.Ctrl</th><th>PPV</th><th>%Cumpl.</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'<tfoot><tr><td class="L">Acumulado</td><td>'+d.cne+'</td><td>'+d.ctrl+'</td><td>'+d.altas+'</td>'
+    +'<td>'+d.uni+'</td><td>'+d.bi+'</td><td>'+d.multi+'</td><td>'+d.retrat+'</td><td>'+te+'</td>'
+    +'<td>'+d.ic+'</td><td>'+d.ik+'</td><td class="mny">'+fmt(d.ppv)+'</td><td>'+pa+'%</td></tr></tfoot>'
+    +'</table></div></div>';
+}
+
+
 function renderProduccion(){
   const isE=cProf==='equipo';
   const prog=isE?getProgE():DATA[cProf].prog;
@@ -588,25 +712,9 @@ function renderProduccion(){
   const pEndo=pc(te,prog.total_endo);
   const ref=25;
 
-  function cumK(cls,lbl,val,meta,extra=''){
-    const p=pc(val,meta);
-    const w=Math.min(p,100);
-    const bcls=p>=85?'b-ok':p>=55?'b-war':'b-low';
-    return `<div class="kcard ${cls}">
-      <div class="klbl">${lbl}</div>
-      <div class="kval">${val}</div>
-      <div class="ksub">meta anual: ${meta.toLocaleString()}</div>
-      <div class="prog-bar">
-        <div class="prog-ref" style="left:${ref}%"></div>
-        <div class="prog-fill" style="width:${w}%;background:currentColor" class="pval"></div>
-      </div>
-      <div class="prog-pct">${p}% del anual <span class="badge ${bcls}">${p>=ref?'▲':'▼'} esp.${ref}%</span></div>
-      ${extra}
-    </div>`;
-  }
-  function simK(cls,lbl,val,sub){
-    return `<div class="kcard ${cls}"><div class="klbl">${lbl}</div><div class="kval">${val}</div><div class="ksub">${sub}</div></div>`;
-  }
+
+  // helper functions moved to global scope
+
 
   let h=`
   <div class="slabel">Indicadores clínicos principales</div>
@@ -647,8 +755,8 @@ function renderProduccion(){
     </div>
   </div>`;
 
-  if(isE) h+=renderTablaEquipo();
-  else h+=renderTablaInd(cProf);
+  if(isE) h+=tablaEquipo();
+  else h+=tablaInd(cProf);
   return h;
 }
 
@@ -656,121 +764,142 @@ function renderProduccion(){
 // SECCIÓN: AUSENTISMO
 // ══════════════════════════════════════════════
 function renderAusentismo(){
-  const totalInas=408;
+  const isE = cProf === 'equipo';
+  const AUSEN = {
+    equipo:{total:408,ic:194,ik:214,
+      dias:{Lunes:120,Martes:77,Miercoles:96,Jueves:73,Viernes:42},
+      sexo:{Hombre:127,Mujer:281},
+      rangos:{'<18':58,'18-29':92,'30-39':96,'40-49':58,'50-59':33,'60-69':41,'70+':29},
+      heat:{JC:{Lunes:56,Martes:34,Miercoles:48,Jueves:38,Viernes:20},
+            AC:{Lunes:38,Martes:22,Miercoles:27,Jueves:16,Viernes:6},
+            FD:{Lunes:26,Martes:21,Miercoles:21,Jueves:19,Viernes:16}},
+      mes:{Ene:166,Feb:103,Mar:139}},
+    JC:{total:196,ic:81,ik:115,
+      dias:{Lunes:56,Martes:34,Miercoles:48,Jueves:38,Viernes:20},
+      sexo:{Hombre:42,Mujer:154},
+      rangos:{'<18':22,'18-29':38,'30-39':44,'40-49':28,'50-59':22,'60-69':28,'70+':14},
+      mes:{Ene:72,Feb:71,Mar:53}},
+    AC:{total:109,ic:58,ik:51,
+      dias:{Lunes:38,Martes:22,Miercoles:27,Jueves:16,Viernes:6},
+      sexo:{Hombre:42,Mujer:67},
+      rangos:{'<18':18,'18-29':28,'30-39':26,'40-49':16,'50-59':6,'60-69':8,'70+':7},
+      mes:{Ene:45,Feb:24,Mar:40}},
+    FD:{total:103,ic:55,ik:48,
+      dias:{Lunes:26,Martes:21,Miercoles:21,Jueves:19,Viernes:16},
+      sexo:{Hombre:43,Mujer:60},
+      rangos:{'<18':18,'18-29':26,'30-39':26,'40-49':14,'50-59':5,'60-69':5,'70+':8},
+      mes:{Ene:49,Feb:8,Mar:46}},
+  };
 
-  // Heatmap heat intensity
-  function heatColor(v,max){
-    const t=v/max;
-    if(t<0.2) return {bg:'#D6EEF6',color:'#09769F'};
-    if(t<0.4) return {bg:'#72CBE7',color:'#0B5876'};
-    if(t<0.6) return {bg:'#0D82A9',color:'#fff'};
-    if(t<0.8) return {bg:'#0B5876',color:'#fff'};
-    return {bg:'#083A52',color:'#fff'};
+  const A = AUSEN[cProf] || AUSEN.equipo;
+  const tot = A.total;
+  const nombreProf = isE ? 'Equipo completo' : DATA[cProf].nombre;
+  const diaCrit = Object.entries(A.dias).sort((a,b)=>b[1]-a[1])[0];
+  const pHom = Math.round(A.sexo.Hombre/tot*100);
+  const pMuj = Math.round(A.sexo.Mujer/tot*100);
+  const pIC  = Math.round(A.ic/tot*100);
+  const pIK  = Math.round(A.ik/tot*100);
+
+  // Heatmap
+  const dias = ['Lunes','Martes','Miercoles','Jueves','Viernes'];
+  const diasLabel = {Lunes:'LUN',Martes:'MAR',Miercoles:'MIE',Jueves:'JUE',Viernes:'VIE'};
+  const pnames = {JC:'Carrasco',AC:'Caballero',FD:'Duran'};
+  function hc(v,max){
+    const t=v/(max||1);
+    if(t<0.2) return 'background:#D6EEF6;color:#09769F';
+    if(t<0.4) return 'background:#72CBE7;color:#0B5876';
+    if(t<0.6) return 'background:#0D82A9;color:#fff';
+    if(t<0.8) return 'background:#0B5876;color:#fff';
+    return 'background:#083A52;color:#fff';
   }
 
-  const dias=['Lunes','Martes','Miércoles','Jueves','Viernes'];
-  const profs=['JC','AC','FD'];
-  const profNames={JC:'Carrasco',AC:'Caballero',FD:'Durán'};
-  const maxH=56; // máx en heatmap
+  let heatHTML = '<div class="heat-g" style="grid-template-columns:auto repeat(5,1fr)">';
+  heatHTML += '<div class="hrl"></div>';
+  dias.forEach(function(d){ heatHTML += '<div class="hcl">'+diasLabel[d]+'</div>'; });
 
-  let heatHTML=`<div class="heat-wrap">
-    <div class="heat-row-label"></div>
-    ${dias.map(d=>`<div class="heat-col-label">${d.slice(0,3).toUpperCase()}</div>`).join('')}`;
-  profs.forEach(p=>{
-    heatHTML+=`<div class="heat-row-label">${profNames[p]}</div>`;
-    dias.forEach(d=>{
-      const v=AUSEN.heatmap[p][d]||0;
-      const s=heatColor(v,maxH);
-      heatHTML+=`<div class="heat-cell" style="background:${s.bg};color:${s.color}" title="${profNames[p]} - ${d}: ${v}">${v}</div>`;
+  if(isE){
+    ['JC','AC','FD'].forEach(function(p){
+      heatHTML += '<div class="hrl">'+pnames[p]+'</div>';
+      dias.forEach(function(d){
+        const v = AUSEN.equipo.heat[p][d]||0;
+        heatHTML += '<div class="hc" style="'+hc(v,56)+'" title="'+pnames[p]+'-'+d+': '+v+'">'+v+'</div>';
+      });
     });
-  });
-  // Totales fila
-  heatHTML+=`<div class="heat-row-label" style="font-weight:700;color:#0B5876">Total</div>`;
-  dias.forEach(d=>{
-    const v=AUSEN.por_dia[d]||0;
-    const s=heatColor(v,120);
-    heatHTML+=`<div class="heat-cell" style="background:${s.bg};color:${s.color};font-size:13px" title="${d}: ${v}">${v}</div>`;
-  });
-  heatHTML+=`</div>`;
+    heatHTML += '<div class="hrl" style="font-weight:700;color:var(--azul)">Total</div>';
+    dias.forEach(function(d){
+      const v = A.dias[d]||0;
+      heatHTML += '<div class="hc" style="'+hc(v,120)+';font-size:12px">'+v+'</div>';
+    });
+  } else {
+    const mesesArr = ['Ene','Feb','Mar'];
+    mesesArr.forEach(function(m){
+      const tot_m = (DATA[cProf].meses[m].ic||0)+(DATA[cProf].meses[m].ik||0);
+      const sumDias = Object.values(A.dias).reduce(function(a,b){return a+b;},0);
+      heatHTML += '<div class="hrl">'+MFULL[m]+'</div>';
+      dias.forEach(function(d){
+        const prop = (A.dias[d]||0)/(sumDias||1);
+        const v = Math.round(tot_m*prop);
+        const maxV = Math.round(tot_m*Math.max.apply(null,Object.values(A.dias))/(sumDias||1));
+        heatHTML += '<div class="hc" style="'+hc(v,maxV||1)+'" title="'+MFULL[m]+'-'+d+': ~'+v+'">'+v+'</div>';
+      });
+    });
+    heatHTML += '<div class="hrl" style="font-weight:700;color:var(--azul)">Total</div>';
+    const maxD = Math.max.apply(null,Object.values(A.dias));
+    dias.forEach(function(d){
+      const v=A.dias[d]||0;
+      heatHTML += '<div class="hc" style="'+hc(v,maxD)+';font-size:12px">'+v+'</div>';
+    });
+  }
+  heatHTML += '</div>';
+  heatHTML += '<div style="margin-top:8px;font-size:9px;color:var(--suave);display:flex;align-items:center;gap:4px">Escala: <span style="background:#D6EEF6;width:14px;height:8px;border-radius:2px;display:inline-block"></span><span style="background:#72CBE7;width:14px;height:8px;border-radius:2px;display:inline-block"></span><span style="background:#0D82A9;width:14px;height:8px;border-radius:2px;display:inline-block"></span><span style="background:#0B5876;width:14px;height:8px;border-radius:2px;display:inline-block"></span><span style="background:#083A52;width:14px;height:8px;border-radius:2px;display:inline-block"></span> Bajo - Alto</div>';
 
-  // Barras horizontales rango etario
-  const rangos=Object.entries(AUSEN.por_rango).sort((a,b)=>b[1]-a[1]);
-  const maxR=96;
-  const barColors=['#0D82A9','#09769F','#0B5876','#2DA8A8','#4BBACC','#72CBE7','#A1DAEB'];
-  let barHTML=`<div class="hbar-wrap">`;
-  rangos.forEach(([label,val],i)=>{
-    const pct=Math.round(val/totalInas*100);
+  // Barras rango etario
+  const rangos = Object.entries(A.rangos).sort(function(a,b){return b[1]-a[1];});
+  const maxR = Math.max.apply(null,Object.values(A.rangos));
+  const bcolors = ['#0D82A9','#09769F','#0B5876','#2DA8A8','#4BBACC','#72CBE7','#A1DAEB'];
+  let barsHTML = '<div class="hbar-w">';
+  rangos.forEach(function(entry,i){
+    const lbl=entry[0], val=entry[1];
     const w=Math.round(val/maxR*100);
-    barHTML+=`<div class="hbar-item">
-      <div class="hbar-label">${label}</div>
-      <div class="hbar-track">
-        <div class="hbar-fill" style="width:${w}%;background:${barColors[i]}">
-          <span>${val}</span>
-        </div>
-      </div>
-      <div style="font-size:10px;font-weight:700;color:${barColors[i]};min-width:30px;padding-left:6px">${pct}%</div>
-    </div>`;
+    const pct=Math.round(val/tot*100);
+    barsHTML += '<div class="hbar-i"><div class="hbar-l">'+lbl+'</div><div class="hbar-t"><div class="hbar-f" style="width:'+w+'%;background:'+bcolors[i]+'"><span>'+val+'</span></div></div><div style="font-size:10px;font-weight:700;color:'+bcolors[i]+';min-width:28px;padding-left:5px">'+pct+'%</div></div>';
   });
-  barHTML+=`</div>`;
+  barsHTML += '</div>';
 
-  return `
-  <div class="slabel">Resumen de ausentismo — equipo completo ene–mar 2026</div>
-  <div class="kgrid4">
-    <div class="kcard c-rojo"><div class="klbl">Total inasistencias</div><div class="kval">408</div><div class="ksub">ene–mar 2026 · 3 profesionales</div></div>
-    <div class="kcard c-azul"><div class="klbl">Inasistencia a CNE</div><div class="kval">194</div><div class="ksub">47.5% — primeras consultas perdidas</div></div>
-    <div class="kcard c-teal"><div class="klbl">Inasistencia a Control</div><div class="kval">214</div><div class="ksub">52.5% — controles sin asistir</div></div>
-    <div class="kcard c-amber"><div class="klbl">Día crítico</div><div class="kval">Lunes</div><div class="ksub">120 inasistencias · 29% del total</div></div>
-  </div>
+  // HTML de la sección
+  let html = '';
+  html += '<div class="slabel">Ausentismo &mdash; '+nombreProf+'</div>';
+  html += '<div class="kg4">';
+  html += simK('cr','Total inasistencias',tot,'ene\u2013mar 2026');
+  html += simK('ca','Inasistencia a CNE',A.ic,pIC+'% \u2014 consultas nuevas');
+  html += simK('ct','Inasistencia a Control',A.ik,pIK+'% \u2014 controles');
+  html += simK('cam','D\u00eda cr\u00edtico',diaCrit[0],diaCrit[1]+' casos \u00b7 '+Math.round(diaCrit[1]/tot*100)+'% del total');
+  html += '</div>';
 
-  <div class="slabel">Distribución por día y profesional — mapa de calor</div>
-  <div class="cgrid2">
-    <div class="ccard">
-      <div class="ctitle">Heatmap: inasistencias por profesional y día</div>
-      <div class="csub">Mayor intensidad = mayor ausentismo · Equipo completo ene–mar</div>
-      <div style="margin-top:14px">${heatHTML}</div>
-      <div style="margin-top:12px;font-size:9px;color:var(--texto-suave)">
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <span>Escala:</span>
-          ${['#D6EEF6','#72CBE7','#0D82A9','#0B5876','#083A52'].map((c,i)=>`<span style="background:${c};width:20px;height:10px;border-radius:3px;display:inline-block"></span>`).join('')}
-          <span>Bajo → Alto</span>
-        </div>
-      </div>
-    </div>
-    <div class="ccard">
-      <div class="ctitle">Por rango etario</div>
-      <div class="csub">Inasistencias totales equipo · 408 casos</div>
-      <div style="margin-top:14px">${barHTML}</div>
-    </div>
-  </div>
+  html += '<div class="slabel">Heatmap y rango etario</div>';
+  html += '<div class="kg2">';
+  html += '<div class="cc2"><div class="cct">Inasistencias por '+(isE?'profesional y':'mes &mdash;')+' d\u00eda de la semana</div><div class="ccs">Mayor intensidad = mayor ausentismo \u00b7 '+nombreProf+'</div>'+heatHTML+'</div>';
+  html += '<div class="cc2"><div class="cct">Por rango etario</div><div class="ccs">'+tot+' inasistencias \u2014 '+nombreProf+'</div>'+barsHTML+'</div>';
+  html += '</div>';
 
-  <div class="slabel">Distribución por sexo, tipo de atención y profesional</div>
-  <div class="cgrid22">
-    <div class="ccard">
-      <div class="ctitle">Por sexo</div>
-      <div class="csub">Distribución porcentual</div>
-      <div style="position:relative;height:180px"><canvas id="ch_sexo"></canvas></div>
-    </div>
-    <div class="ccard">
-      <div class="ctitle">CNE vs Control</div>
-      <div class="csub">Tipo de atención no asistida</div>
-      <div style="position:relative;height:180px"><canvas id="ch_tipo_inas"></canvas></div>
-    </div>
-    <div class="ccard">
-      <div class="ctitle">Por profesional</div>
-      <div class="csub">Total inasistencias</div>
-      <div style="position:relative;height:180px"><canvas id="ch_prof_inas"></canvas></div>
-    </div>
-    <div class="ccard">
-      <div class="ctitle">Evolución mensual</div>
-      <div class="csub">Inasistencias por mes</div>
-      <div style="position:relative;height:180px"><canvas id="ch_mes_inas"></canvas></div>
-    </div>
-  </div>`;
+  html += '<div class="slabel">Distribuci\u00f3n por sexo, tipo y evoluci\u00f3n mensual</div>';
+  html += '<div class="kg3">';
+  html += '<div class="cc2"><div class="cct">Por sexo</div><div class="ccs">Distribuci\u00f3n porcentual</div>';
+  html += '<div class="leg"><span><span class="ld" style="background:#09769F"></span>Hombre: '+A.sexo.Hombre+' ('+pHom+'%)</span><span><span class="ld" style="background:#72CBE7"></span>Mujer: '+A.sexo.Mujer+' ('+pMuj+'%)</span></div>';
+  html += '<div style="position:relative;height:160px"><canvas id="ch_sx" role="img" aria-label="Ausentismo por sexo">Hombres '+A.sexo.Hombre+', Mujeres '+A.sexo.Mujer+'.</canvas></div></div>';
+
+  html += '<div class="cc2"><div class="cct">CNE vs Control</div><div class="ccs">Tipo de atenci\u00f3n no asistida</div>';
+  html += '<div class="leg"><span><span class="ld" style="background:#0D82A9"></span>CNE: '+A.ic+' ('+pIC+'%)</span><span><span class="ld" style="background:#2DA8A8"></span>Control: '+A.ik+' ('+pIK+'%)</span></div>';
+  html += '<div style="position:relative;height:160px"><canvas id="ch_tp" role="img" aria-label="Ausentismo CNE vs Control">CNE '+A.ic+', Control '+A.ik+'.</canvas></div></div>';
+
+  html += '<div class="cc2"><div class="cct">Evoluci\u00f3n mensual</div><div class="ccs">'+nombreProf+' \u2014 ene\u2013mar</div>';
+  html += '<div style="position:relative;height:180px"><canvas id="ch_mi" role="img" aria-label="Evolucion mensual inasistencias">Ene: '+A.mes.Ene+', Feb: '+A.mes.Feb+', Mar: '+A.mes.Mar+'.</canvas></div></div>';
+  html += '</div>';
+
+  return html;
 }
 
-// ══════════════════════════════════════════════
-// SECCIÓN: FINANCIERO
-// ══════════════════════════════════════════════
+
 function renderFinanciero(){
   const d=cProf==='equipo'?getEquipo(cMes):getRow(cProf,cMes);
   const isE=cProf==='equipo';
@@ -809,7 +938,7 @@ function renderFinanciero(){
   <div class="slabel">Tabla de ingresos mensuales detallada</div>
   <div class="tcard">
     <div class="thead-bar"><h3>Resumen financiero PPV — Endodoncia 2026</h3><span>Arancel vigente v1.0 10/02/2026</span></div>
-    <div style="overflow-x:auto">
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%">
     <table>
       <thead><tr>
         <th class="L">Profesional</th>
@@ -919,7 +1048,7 @@ function renderTablaEquipo(){
   return `<div class="slabel">Tabla consolidada por profesional</div>
   <div class="tcard">
     <div class="thead-bar"><h3>Gestión clínica — Especialidad Endodoncia</h3><span>Hospital Dr. Leonardo Guzmán · Antofagasta</span></div>
-    <div style="overflow-x:auto"><table>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%"><table>
       <thead><tr>
         <th class="L">Profesional</th><th>Hrs</th><th>CNE</th><th>Controles</th><th>Altas</th>
         <th>Uni.</th><th>Bi.</th><th>Multi.</th><th>Retrat.</th><th>Tot.Endo.</th>
@@ -956,7 +1085,7 @@ function renderTablaInd(prof){
   return `<div class="slabel">Tabla mensual — ${p.nombre}</div>
   <div class="tcard">
     <div class="thead-bar"><h3>${p.nombre}</h3><span>${p.hrs} hrs semanales · Programación 2026</span></div>
-    <div style="overflow-x:auto"><table>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%"><table>
       <thead><tr>
         <th class="L">Mes</th><th>CNE</th><th>Controles</th><th>Altas</th>
         <th>Uni.</th><th>Bi.</th><th>Multi.</th><th>Retrat.</th><th>Tot.Endo.</th>
@@ -1046,40 +1175,56 @@ function drawCharts(){
   }
 
   if(cSec==='ausentismo'){
-    const c1=document.getElementById('ch_sexo');
-    if(c1) charts.sexo=new Chart(c1,{type:'doughnut',data:{
-      labels:['Hombre 127 (31.1%)','Mujer 281 (68.9%)'],
-      datasets:[{data:[127,281],backgroundColor:['#09769F','#72CBE7'],borderWidth:2,borderColor:'#fff'}]
+    const AUSEN_CH={
+      equipo:{total:408,ic:194,ik:214,sexo:{H:127,M:281},mes:{Ene:166,Feb:103,Mar:139}},
+      JC:{total:196,ic:81,ik:115,sexo:{H:42,M:154},mes:{Ene:72,Feb:71,Mar:53}},
+      AC:{total:109,ic:58,ik:51,sexo:{H:42,M:67},mes:{Ene:45,Feb:24,Mar:40}},
+      FD:{total:103,ic:55,ik:48,sexo:{H:43,M:60},mes:{Ene:49,Feb:8,Mar:46}},
+    };
+    const AC_D = AUSEN_CH[cProf] || AUSEN_CH.equipo;
+    const isEq = cProf==='equipo';
+    const pHom=Math.round(AC_D.sexo.H/AC_D.total*100);
+    const pMuj=Math.round(AC_D.sexo.M/AC_D.total*100);
+    const pIC =Math.round(AC_D.ic/AC_D.total*100);
+    const pIK =Math.round(AC_D.ik/AC_D.total*100);
+
+    const csx=document.getElementById('ch_sx');
+    if(csx) charts.csx=new Chart(csx,{type:'doughnut',data:{
+      labels:['Hombre '+AC_D.sexo.H+' ('+pHom+'%)','Mujer '+AC_D.sexo.M+' ('+pMuj+'%)'],
+      datasets:[{data:[AC_D.sexo.H,AC_D.sexo.M],backgroundColor:['#09769F','#A1DAEB'],borderWidth:2,borderColor:'#fff'}]
     },options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
       plugins:{legend:{position:'bottom',labels:{font:{size:10},color:'#2E7A99',boxWidth:12,padding:8}}}}});
 
-    const c2=document.getElementById('ch_tipo_inas');
-    if(c2) charts.tipo_inas=new Chart(c2,{type:'doughnut',data:{
-      labels:['CNE 194 (47.5%)','Control 214 (52.5%)'],
-      datasets:[{data:[194,214],backgroundColor:['#0D82A9','#2DA8A8'],borderWidth:2,borderColor:'#fff'}]
+    const ctp=document.getElementById('ch_tp');
+    if(ctp) charts.ctp=new Chart(ctp,{type:'doughnut',data:{
+      labels:['CNE '+AC_D.ic+' ('+pIC+'%)','Control '+AC_D.ik+' ('+pIK+'%)'],
+      datasets:[{data:[AC_D.ic,AC_D.ik],backgroundColor:['#0D82A9','#2DA8A8'],borderWidth:2,borderColor:'#fff'}]
     },options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
       plugins:{legend:{position:'bottom',labels:{font:{size:10},color:'#2E7A99',boxWidth:12,padding:8}}}}});
 
-    const c3=document.getElementById('ch_prof_inas');
-    if(c3) charts.prof_inas=new Chart(c3,{type:'bar',data:{
-      labels:['J. Carrasco','A. Caballero','F. Durán'],
-      datasets:[{
-        data:[196,109,103],
-        backgroundColor:['#09769F','#2DA8A8','#4BBACC'],
-        borderWidth:0,borderRadius:6
-      }]
-    },options:opts(false,false)});
-
-    const c4=document.getElementById('ch_mes_inas');
-    if(c4) charts.mes_inas=new Chart(c4,{type:'line',data:{labels:['Ene','Feb','Mar'],datasets:[
-      {label:'JC',data:[196,71,53].map((_,i)=>[72,71,53][i]),borderColor:'#09769F',pointBackgroundColor:'#09769F',pointRadius:5,tension:.3,fill:false,backgroundColor:'transparent'},
-      {label:'AC',data:[45,24,40],borderColor:'#2DA8A8',pointBackgroundColor:'#2DA8A8',pointRadius:5,tension:.3,fill:false,backgroundColor:'transparent'},
-      {label:'FD',data:[49,8,46],borderColor:'#4BBACC',pointBackgroundColor:'#4BBACC',pointRadius:5,tension:.3,fill:false,backgroundColor:'transparent'},
-    ]},options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{font:{size:10},color:'#2E7A99',boxWidth:12,padding:8}}},
-      scales:{x:{grid:{color:'#EAF4F8'},ticks:{font:{size:10},color:'#6AAEC4'}},
-              y:{min:0,grid:{color:'#EAF4F8'},ticks:{font:{size:10},color:'#6AAEC4'}}}}});
+    const cmi=document.getElementById('ch_mi');
+    if(cmi){
+      if(isEq){
+        charts.cmi=new Chart(cmi,{type:'line',data:{labels:['Ene','Feb','Mar'],datasets:[
+          {label:'JC',data:[72,71,53],borderColor:'#09769F',pointBackgroundColor:'#09769F',pointRadius:5,tension:.3,fill:false,backgroundColor:'transparent'},
+          {label:'AC',data:[45,24,40],borderColor:'#2DA8A8',pointBackgroundColor:'#2DA8A8',pointRadius:5,tension:.3,fill:false,backgroundColor:'transparent'},
+          {label:'FD',data:[49,8,46],borderColor:'#4BBACC',pointBackgroundColor:'#4BBACC',pointRadius:5,tension:.3,fill:false,backgroundColor:'transparent'},
+        ]},options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{position:'bottom',labels:{font:{size:10},color:'#2E7A99',boxWidth:12,padding:8}}},
+          scales:{x:{grid:{color:'#EAF4F8'},ticks:{font:{size:10},color:'#6AAEC4'}},
+                  y:{min:0,grid:{color:'#EAF4F8'},ticks:{font:{size:10},color:'#6AAEC4'}}}}});
+      } else {
+        const col=DATA[cProf].col;
+        charts.cmi=new Chart(cmi,{type:'bar',data:{labels:['Enero','Febrero','Marzo'],datasets:[
+          {label:'Inasistencias',data:[AC_D.mes.Ene,AC_D.mes.Feb,AC_D.mes.Mar],
+           backgroundColor:[col,col,col],borderWidth:0,borderRadius:5},
+        ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{x:{grid:{color:'#EAF4F8'},ticks:{font:{size:10},color:'#6AAEC4'}},
+                  y:{min:0,grid:{color:'#EAF4F8'},ticks:{font:{size:10},color:'#6AAEC4'}}}}});
+      }
+    }
   }
+
 
   if(cSec==='financiero'){
     const c1=document.getElementById('ch_ppv');
@@ -1155,9 +1300,6 @@ render();
 </script>
 
 <script>
-// ═══════════════════════════════════════
-// ALMACENAMIENTO PERSISTENTE
-// ═══════════════════════════════════════
 const STORAGE_KEY = 'endodoncia_han_2026_v2';
 
 async function saveData(data) {
@@ -1183,112 +1325,6 @@ async function loadData() {
     if (local) return JSON.parse(local);
   } catch(e) {}
   return null;
-}
-
-// Panel de actualización mensual
-function showUpdatePanel() {
-  const overlay = document.getElementById('update-overlay');
-  if (overlay) { overlay.style.display = 'flex'; return; }
-  const div = document.createElement('div');
-  div.id = 'update-overlay';
-  div.style.cssText = 'position:fixed;inset:0;background:rgba(11,88,118,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-  div.innerHTML = buildUpdatePanel();
-  document.body.appendChild(div);
-}
-
-function hideUpdatePanel() {
-  const o = document.getElementById('update-overlay');
-  if (o) o.style.display = 'none';
-}
-
-function buildUpdatePanel() {
-  const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const MFULL = {Ene:'Enero',Feb:'Febrero',Mar:'Marzo',Abr:'Abril',May:'Mayo',Jun:'Junio',Jul:'Julio',Ago:'Agosto',Sep:'Septiembre',Oct:'Octubre',Nov:'Noviembre',Dic:'Diciembre'};
-  const profs = [{k:'JC',n:'J. Carrasco (44h)'},{k:'AC',n:'A. Caballero (33h)'},{k:'FD',n:'F. Durán (33h)'}];
-  const campos = [
-    {k:'cne',l:'Primeras consultas (CNE)'},{k:'ctrl',l:'Controles'},
-    {k:'altas',l:'Altas de tratamiento'},{k:'uni',l:'Endod. unirradiculares'},
-    {k:'bi',l:'Endod. birradiculares'},{k:'multi',l:'Endod. multirradiculares'},
-    {k:'retrat',l:'Retratamientos'},{k:'ic',l:'Inasistencias CNE'},
-    {k:'ict',l:'Inasistencias control'},{k:'ppv',l:'Ingresos PPV ($)'},
-  ];
-  const mOpts = MESES.map(m => `<option value="${m}">${MFULL[m]}</option>`).join('');
-  const fOpts = profs.map(p => `<option value="${p.k}">${p.n}</option>`).join('');
-  const inputs = campos.map(c => `
-    <div style="display:flex;flex-direction:column;gap:3px">
-      <label style="font-size:10px;font-weight:700;color:#6AAEC4;text-transform:uppercase;letter-spacing:.06em">${c.l}</label>
-      <input id="upd-${c.k}" type="number" min="0" value="0"
-        style="font-size:13px;font-weight:600;color:#0B4A6A;border:1.5px solid #C5DFE9;border-radius:8px;padding:7px 10px;outline:none;width:100%">
-    </div>`).join('');
-
-  return `<div style="background:#fff;border-radius:16px;padding:28px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.25)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #C5DFE9;padding-bottom:14px">
-      <div>
-        <h3 style="font-size:16px;font-weight:700;color:#0B5876;margin-bottom:3px">Actualizar datos mensuales</h3>
-        <p style="font-size:11px;color:#6AAEC4">Los cambios se guardan automáticamente y todos los profesionales verán la actualización</p>
-      </div>
-      <button onclick="hideUpdatePanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6AAEC4;padding:4px 8px">✕</button>
-    </div>
-    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
-      <div style="flex:1;min-width:180px">
-        <label style="font-size:10px;font-weight:700;color:#6AAEC4;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px">Profesional</label>
-        <select id="upd-prof" onchange="loadUpdateFields()"
-          style="width:100%;font-size:13px;font-weight:600;color:#0B5876;border:1.5px solid #C5DFE9;border-radius:8px;padding:7px 10px;outline:none">${fOpts}</select>
-      </div>
-      <div style="flex:1;min-width:140px">
-        <label style="font-size:10px;font-weight:700;color:#6AAEC4;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px">Mes</label>
-        <select id="upd-mes" onchange="loadUpdateFields()"
-          style="width:100%;font-size:13px;font-weight:600;color:#0B5876;border:1.5px solid #C5DFE9;border-radius:8px;padding:7px 10px;outline:none">${mOpts}</select>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:20px">
-      ${inputs}
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button onclick="saveUpdateData()"
-        style="background:linear-gradient(90deg,#0B5876,#09769F);color:#fff;border:none;border-radius:9px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer;flex:1;min-width:140px">
-        Guardar datos
-      </button>
-      <button onclick="hideUpdatePanel()"
-        style="background:#fff;color:#2E7A99;border:1.5px solid #C5DFE9;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer">
-        Cancelar
-      </button>
-    </div>
-    <div id="upd-status" style="margin-top:12px;font-size:11px;color:#6AAEC4;text-align:center;min-height:16px"></div>
-  </div>`;
-}
-
-function loadUpdateFields() {
-  const p = document.getElementById('upd-prof')?.value;
-  const m = document.getElementById('upd-mes')?.value;
-  if (!p || !m || !window._dashData) return;
-  const d = window._dashData[p]?.meses?.[m];
-  if (!d) return;
-  ['cne','ctrl','altas','uni','bi','multi','retrat','ic','ict','ppv'].forEach(k => {
-    const el = document.getElementById('upd-'+k);
-    if (el) el.value = d[k] || 0;
-  });
-}
-
-async function saveUpdateData() {
-  const p = document.getElementById('upd-prof')?.value;
-  const m = document.getElementById('upd-mes')?.value;
-  if (!p || !m) return;
-  const keys = ['cne','ctrl','altas','uni','bi','multi','retrat','ic','ict','ppv'];
-  const obj = {};
-  keys.forEach(k => { obj[k] = parseFloat(document.getElementById('upd-'+k)?.value) || 0; });
-  if (!window._dashData[p].meses[m]) window._dashData[p].meses[m] = {};
-  window._dashData[p].meses[m] = obj;
-  const ok = await saveData(window._dashData);
-  const st = document.getElementById('upd-status');
-  const MFULL2 = {Ene:'Enero',Feb:'Febrero',Mar:'Marzo',Abr:'Abril',May:'Mayo',Jun:'Junio',Jul:'Julio',Ago:'Agosto',Sep:'Septiembre',Oct:'Octubre',Nov:'Noviembre',Dic:'Diciembre'};
-  if (st) {
-    st.style.color = ok ? '#0E7A5A' : '#B83232';
-    st.textContent = ok
-      ? `Datos de ${MFULL2[m]} guardados. Los 3 profesionales verán la actualización.`
-      : 'Datos guardados localmente.';
-  }
-  setTimeout(() => { hideUpdatePanel(); window.location.reload(); }, 1800);
 }
 </script>
 </body>
